@@ -9,19 +9,20 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from pathlib import Path
+
 readme = ""
+pkg = "bimaxpy"
 
 setup(
     long_description=readme,
-    name="bimaxpy",
+    name=pkg,
     version="0.1.0",
     description="python bindings for bimax algorithm written in go",
     python_requires="==3.*,>=3.6.0",
-    author="Your Name",
-    author_email="you@example.com",
-    packages=[],
+    author="Max Schulte",
+    packages=[pkg],
     package_dir={"": "."},
-    package_data={},
     install_requires=["cffi==1.*,>=1.14.4"],
     cffi_modules=["build.py:ffi"],
 )
