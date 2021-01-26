@@ -1,0 +1,6 @@
+__pycache__/
+_bimax.c
+_bimax.cpython-36m-x86_64-linux-gnu.so
+_bimax.o
+build/
+releases/

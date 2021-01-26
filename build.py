@@ -16,22 +16,23 @@ def main():
         goarch = "amd64"
     goos = os.uname().sysname.lower()
 
-    # Request release of Architechture and OS
-    url = f"https://github.com/maxsei/bimax/releases/download/v0.0.1/{goos}_{goarch}.tar.gz"
-    resp = requests.get(url)
-    if not resp.ok:
-        raise Exception(
-            f"could not find release for os: {goos} arch: {goarch} at {url}"
-        )
-
-    # Read in the content of the request and extract tar
-    buf = io.BytesIO(resp.content)
-    archive = tarfile.open(fileobj=buf)
-    archive.extractall()
-
     # Paths the tar should be extracted to
-    base = Path(f"releases/{goos}_{goarch}").absolute()
+    base = Path(f"releases/{goos}_{goarch}")
     header_filename = base.joinpath("libbimax.h")
+
+    # If we don't have the package download the release
+    if not base.exists:
+        # Request release of Architechture and OS
+        url = f"https://github.com/maxsei/bimax/releases/download/v0.0.1/{goos}_{goarch}.tar.gz"
+        resp = requests.get(url)
+        if not resp.ok:
+            raise Exception(
+                f"could not find release for os: {goos} arch: {goarch} at {url}"
+            )
+        # Read in the content of the request and extract tar
+        buf = io.BytesIO(resp.content)
+        archive = tarfile.open(fileobj=buf)
+        archive.extractall()
 
     # Preprocess header file
     pp = pycparser.preprocess_file(
@@ -61,13 +62,15 @@ def main():
     # Build and compile cffi library with included headers and shared objects
     ffi = cffi.FFI()
     ffi.cdef(pp)
+    print(str(base))
     ffi.set_source(
         "_bimax",
         f'#include "{header_filename}"',
+        library_dirs=[str(base.absolute())],
         libraries=["bimax"],
-        library_dirs=[str(base)],
+        extra_link_args=[f"-Wl,-rpath={str(base.absolute())}"],
     )
-    ffi.compile()
+    ffi.compile(verbose=True)
 
 
 if __name__ == "__main__":
