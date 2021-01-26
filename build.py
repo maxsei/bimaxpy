@@ -64,11 +64,11 @@ def main():
     ffi.cdef(pp)
     print(str(base))
     ffi.set_source(
-        "_bimax",
-        f'#include "{header_filename}"',
+        "bimaxpy._bimax",
+        f'#include "{header_filename.absolute()}"',
         library_dirs=[str(base.absolute())],
         libraries=["bimax"],
-        extra_link_args=[f"-Wl,-rpath={str(base.absolute())}"],
+        extra_link_args=[f"-Wl,-rpath={base.absolute()}"],
     )
     ffi.compile(verbose=True)
 
