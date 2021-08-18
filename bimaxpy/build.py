@@ -18,13 +18,16 @@ goos = os.uname().sysname.lower()
 # Paths the tar should be extracted to
 fpath = Path(__file__)
 base = fpath.parent
-releases = Path("releases", f"{goos}_{goarch}")
-header = base.joinpath(releases, "libbimax.h")
+# releases = Path("releases", f"{goos}_{goarch}")
+# releases.mkdir(parents=True, exist_ok=True)
+# header = base.joinpath(releases, "libbimax.h")
+header = base.joinpath("libbimax.h")
 
 # If we don't have the package download the release
-if not base.exists():
+if not header.exists():
     # Request release of Architechture and OS
-    url = f"https://github.com/maxsei/bimax/releases/download/v0.0.1/{goos}_{goarch}.tar.gz"
+    # url = f"https://github.com/maxsei/bimax/releases/download/v0.0.1/{goos}_{goarch}.tar.gz"
+    url = f"https://github.com/maxsei/bimax/releases/download/v0.0.1/libbimax.so-v0.0.1-{goos}-{goarch}.tar.gz"
     resp = requests.get(url)
     if not resp.ok:
         raise Exception(
@@ -33,11 +36,13 @@ if not base.exists():
     # Read in the content of the request and extract tar
     buf = io.BytesIO(resp.content)
     archive = tarfile.open(fileobj=buf)
-    archive.extractall(fpath.parent)
+    archive.extractall(base)
+    # archive.extractall(releases)
 
 # Preprocess header file
 pp = pycparser.preprocess_file(
-    str(header),
+    str(header.absolute()),
+    # str(header),
     cpp_path="gcc",
     cpp_args=[
         "-E",
@@ -66,8 +71,10 @@ ffi.cdef(pp)
 ffi.set_source(
     "_bimax",
     f'#include "{header.absolute()}"',
-    library_dirs=[str(base.joinpath(releases).absolute())],
+    # library_dirs=[str(base.joinpath(releases).absolute())],
+    library_dirs=[str(base.absolute())],
     libraries=["bimax"],
-    extra_link_args=[f"-Wl,-rpath={base.joinpath(releases).absolute()}"],
+    # extra_link_args=[f"-Wl,-rpath={base.joinpath(releases).absolute()}"],
+    extra_link_args=[f"-Wl,-rpath={base.absolute()}"],
 )
 ffi.compile(verbose=True)
