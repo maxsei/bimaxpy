@@ -12,17 +12,17 @@ except ImportError:
 from pathlib import Path
 
 readme = ""
-pkg = "bimaxpy"
+pkg = Path("bimaxpy")
 
 setup(
     long_description=readme,
-    name=pkg,
+    name=f"{pkg}",
     version="0.1.0",
     description="python bindings for bimax algorithm written in go",
     python_requires="==3.*,>=3.6.0",
     author="Max Schulte",
-    packages=[pkg],
+    packages=[f"{pkg}"],
     package_dir={"": "."},
     install_requires=["cffi==1.*,>=1.14.4"],
-    cffi_modules=["build.py:ffi"],
+    cffi_modules=[f"{pkg.joinpath('build.py')}:ffi"],
 )
